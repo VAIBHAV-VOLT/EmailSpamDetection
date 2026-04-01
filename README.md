@@ -6,11 +6,11 @@ Traditional spam filters fail against intelligent phishing attempts.
 
 We needed something smarter.
 
-We built PhisHawk.
+We built EmailSpamDetection.
 
-💡 THE SOLUTION — PHISHAWK
+💡 THE SOLUTION — EMAIL SPAM DETECTION
 
-PhisHawk is an AI-powered phishing detection engine that:
+EmailSpamDetection is an AI-powered phishing detection engine that:
 
 🔍 Parses .eml email files
 🧠 Uses NLP & HuggingFace models
@@ -88,23 +88,25 @@ Layer	Technology
 🧪 Testing	Python Scripts
 📂 Input	.eml Email Files
 📂 PROJECT STRUCTURE
-PhisHawk/
+EmailSpamDetection/
 │
-├── emailanalyzer/         
-├── score_backend/         
+├── backend/               # Flask backend & scoring engine
+├── frontend/              # React + Vite UI
+├── ml/                    # ML analysis modules
+├── utils/                 # Utility scripts
+├── data/                  # Sample test data
+├── docs/                  # Documentation
+├── uploads/               # Runtime uploads
 ├── main.py                
 ├── test_analyzer.py       
 ├── test_model_debug.py    
-├── phishing_assessment.json
-├── sample.eml
-├── email2.eml
 ├── requirements.txt
 └── README.md
 
 ⚙ INSTALLATION
 1️⃣ Clone Repository
-git clone https://github.com/VAIBHAV-VOLT/emailphishing.git
-cd emailphishing
+git clone https://github.com/VAIBHAV-VOLT/EmailSpamDetection.git
+cd EmailSpamDetection
 
 2️⃣ Create Virtual Environment
 python -m venv venv
@@ -115,7 +117,7 @@ venv\Scripts\activate
 3️⃣ Install Dependencies
 pip install -r requirements.txt
 
-▶️ RUN PHISHAWK
+▶️ RUN EMAIL SPAM DETECTION
 🔹 Run Detection
 python main.py
 
@@ -139,7 +141,7 @@ python test_analyzer.py
 ✔ Structured
 ✔ Enterprise-ready
 
-🏆 WHY PHISHAWK STANDS OUT (For Judges)
+🏆 WHY EMAIL SPAM DETECTION STANDS OUT (For Judges)
 
 ✅ AI-driven — not rule-based
 ✅ Scalable modular architecture
@@ -147,7 +149,7 @@ python test_analyzer.py
 ✅ Real-world phishing compatibility
 ✅ Enterprise deployable
 
-PhisHawk can evolve into:
+EmailSpamDetection can evolve into:
 
 📧 Email gateway filter
 
@@ -171,7 +173,7 @@ Automates phishing threat detection
 Supports AI-based cyber intelligence
 
 In an era of AI-powered scams,
-PhisHawk becomes more relevant than ever.
+EmailSpamDetection becomes more relevant than ever.
 
 🔮 FUTURE IMPROVEMENTS
 
@@ -185,7 +187,7 @@ PhisHawk becomes more relevant than ever.
 
 🔐 Threat intelligence database
 
-👥 TEAM PHISBUSTERS
+👥 DEVELOPMENT TEAM
 
 -Abhinav Gupta
 

@@ -1,7 +1,7 @@
-# Email Phishing Analyzer - Project Structure
+# EmailSpamDetection - Project Structure
 
 ```
-emailphishing/
+EmailSpamDetection/
 │
 ├── backend/                          # Flask Web Server & Backend Services
 │   ├── main.py                       # Main Flask application (HTTP server)
