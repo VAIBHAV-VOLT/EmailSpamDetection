@@ -1,7 +1,7 @@
 """
 Score Calculator for Email Phishing Detection
 Combines analysis from analyzer, infrastructure_analysis,
-security_check, and url_analyzer to calculate a phishing risk score (0-10).
+security_check, and url_analyzer to calculate a phishing risk score (0-100).
 """
 
 import json

@@ -36,7 +36,7 @@ def analyze_email_body_with_transformers(email_body):
     Analyze email body using pre-trained phishing detection model.
     
     :param email_body: str, the email body text
-    :return: dict with model_score (0-10) and label
+    :return: dict with model_score (0-100) and label
     """
     if not email_body or not email_body.strip():
         return {
@@ -79,11 +79,11 @@ def analyze_email_body_with_transformers(email_body):
         # Calculate score
         if is_positive:
             # High confidence in positive (spam/phishing) = high risk
-            model_score = confidence * 10
+            model_score = confidence * 100
         else:
             # Low confidence in negative (ham/legitimate) = low risk
             # But if confidence is LOW in legitimate, it means HIGH risk
-            model_score = (1 - confidence) * 10
+            model_score = (1 - confidence) * 100
         
         return {
             "model_score": round(model_score, 2),
@@ -158,8 +158,8 @@ def analyze_email_body_fallback(email_body):
             score += 2
             break
     
-    # Normalize score to 0-10
-    model_score = min(score, 10)
+    # Normalize score to 0-100
+    model_score = min(score, 100)
     
     return {
         "model_score": round(model_score, 2),
