@@ -18,13 +18,19 @@ def calculate_attachment_score(msg):
     Calculate phishing score based on attachment analysis.
     
     :param msg: email message object
-    :return: score (0-10)
+    :return: score (0-100)
     """
     try:
-        from .attachment_checks import (
-            get_extension, has_double_extension, is_executable, 
-            is_macro_enabled, is_archive
-        )
+        try:
+            from .attachment_checks import (
+                get_extension, has_double_extension, is_executable, 
+                is_macro_enabled, is_archive
+            )
+        except (ImportError, ValueError):
+            from attachment_checks import (
+                get_extension, has_double_extension, is_executable, 
+                is_macro_enabled, is_archive
+            )
         
         score = 0
         
@@ -37,21 +43,21 @@ def calculate_attachment_score(msg):
             
             # Double extension is suspicious
             if has_double_extension(filename):
-                score += 2
+                score += 20
             
             # Executable file
             if ext and is_executable(ext):
-                score += 3
+                score += 30
             
             # Macro-enabled document
             if ext and is_macro_enabled(ext):
-                score += 2.5
+                score += 25
             
             # Archive file (could contain malware)
             if ext and is_archive(ext):
-                score += 1.5
+                score += 15
         
-        return min(score, 10)
+        return min(score, 100)
     except Exception as e:
         print(f"Attachment check error: {e}")
         return 0
@@ -66,10 +72,13 @@ def calculate_auth_score(msg, metadata):
     
     :param msg: email message object
     :param metadata: email metadata dict
-    :return: score (0-10)
+    :return: score (0-100)
     """
     try:
-        from .auth_checks import parse_authentication_results
+        try:
+            from .auth_checks import parse_authentication_results
+        except (ImportError, ValueError):
+            from auth_checks import parse_authentication_results
         
         score = 0
         auth_header = msg.get("Authentication-Results", "")
@@ -77,27 +86,27 @@ def calculate_auth_score(msg, metadata):
         
         # SPF failures
         if auth_results.get("spf_result") == "fail":
-            score += 2.5
+            score += 25
         elif auth_results.get("spf_result") == "softfail":
-            score += 1
+            score += 10
         
         # DKIM failures
         if auth_results.get("dkim_result") == "fail":
-            score += 2.5
+            score += 25
         elif auth_results.get("dkim_result") == "neutral":
-            score += 0.5
+            score += 5
         
         # DMARC failures
         if auth_results.get("dmarc_result") == "fail":
-            score += 3
+            score += 30
         elif auth_results.get("dmarc_result") == "quarantine":
-            score += 2
+            score += 20
         
         # No authentication records at all
         if not auth_header:
-            score += 2
+            score += 20
         
-        return min(score, 10)
+        return min(score, 100)
     except Exception as e:
         print(f"Auth check error: {e}")
         return 0
@@ -111,33 +120,39 @@ def calculate_header_score(metadata):
     Calculate phishing score based on header analysis.
     
     :param metadata: email metadata dict
-    :return: score (0-10)
+    :return: score (0-100)
     """
     try:
-        from .header_checks import (
-            missing_required_headers, duplicate_headers, 
-            invalid_message_id, unusually_long_headers
-        )
+        try:
+            from .header_checks import (
+                missing_required_headers, duplicate_headers, 
+                invalid_message_id, unusually_long_headers
+            )
+        except (ImportError, ValueError):
+            from header_checks import (
+                missing_required_headers, duplicate_headers, 
+                invalid_message_id, unusually_long_headers
+            )
         
         score = 0
         
         # Missing required headers
         missing = missing_required_headers(metadata)
-        score += len(missing) * 0.5
+        score += len(missing) * 5
         
         # Duplicate headers
         duplicates = duplicate_headers(metadata)
-        score += len(duplicates) * 1.5
+        score += len(duplicates) * 15
         
         # Invalid Message-ID
         if invalid_message_id(metadata.get("message_id")):
-            score += 1.5
+            score += 15
         
         # Unusually long headers
         long_headers = unusually_long_headers(metadata)
-        score += len(long_headers) * 1
+        score += len(long_headers) * 10
         
-        return min(score, 10)
+        return min(score, 100)
     except Exception as e:
         print(f"Header check error: {e}")
         return 0
@@ -151,10 +166,13 @@ def calculate_domain_score(metadata):
     Calculate phishing score based on domain analysis.
     
     :param metadata: email metadata dict
-    :return: score (0-10)
+    :return: score (0-100)
     """
     try:
-        from .domain_checks import has_suspicious_tld, looks_like_spoofed
+        try:
+            from .domain_checks import has_suspicious_tld, looks_like_spoofed
+        except (ImportError, ValueError):
+            from domain_checks import has_suspicious_tld, looks_like_spoofed
         
         score = 0
         from_domain = metadata.get("from_domain", "")
@@ -163,22 +181,22 @@ def calculate_domain_score(metadata):
         # Check From domain
         if from_domain:
             if has_suspicious_tld(from_domain):
-                score += 2
+                score += 20
             if looks_like_spoofed(from_domain):
-                score += 2.5
+                score += 25
         
         # Check Return-Path domain
         if return_path_domain:
             if has_suspicious_tld(return_path_domain):
-                score += 1.5
+                score += 15
             if looks_like_spoofed(return_path_domain):
-                score += 2
+                score += 20
         
         # Domain mismatch
         if from_domain != return_path_domain:
-            score += 1.5
+            score += 15
         
-        return min(score, 10)
+        return min(score, 100)
     except Exception as e:
         print(f"Domain check error: {e}")
         return 0
@@ -192,14 +210,21 @@ def calculate_url_score(email_body):
     Calculate phishing score based on URL checks.
     
     :param email_body: email body text
-    :return: score (0-10)
+    :return: score (0-100)
     """
     try:
-        from .url_analyzer import extract_urls, get_domain
-        from .url_checks import (
-            is_ip_url, has_suspicious_tld, is_long_url, 
-            too_many_subdomains, is_insecure_scheme
-        )
+        try:
+            from .url_analyzer import extract_urls, get_domain
+            from .url_checks import (
+                is_ip_url, has_suspicious_tld, is_long_url, 
+                too_many_subdomains, is_insecure_scheme
+            )
+        except (ImportError, ValueError):
+            from url_analyzer import extract_urls, get_domain
+            from url_checks import (
+                is_ip_url, has_suspicious_tld, is_long_url, 
+                too_many_subdomains, is_insecure_scheme
+            )
         from urllib.parse import urlparse
         
         score = 0
@@ -211,25 +236,25 @@ def calculate_url_score(email_body):
             
             # IP-based URL
             if is_ip_url(domain):
-                score += 2
+                score += 20
             
             # Suspicious TLD
             if has_suspicious_tld(domain):
-                score += 1.5
+                score += 15
             
             # Long URL (could hide actual destination)
             if is_long_url(url):
-                score += 1
+                score += 10
             
             # Too many subdomains
             if too_many_subdomains(domain):
-                score += 1
+                score += 10
             
             # Insecure HTTP
             if is_insecure_scheme(parsed.scheme):
-                score += 1
+                score += 10
         
-        return min(score, 10)
+        return min(score, 100)
     except Exception as e:
         print(f"URL check error: {e}")
         return 0
@@ -244,12 +269,17 @@ def calculate_infrastructure_score(msg, metadata):
     
     :param msg: email message object
     :param metadata: email metadata dict
-    :return: score (0-10)
+    :return: score (0-100)
     """
     try:
-        from .infrastructure_checks import (
-            has_private_ip, helo_mismatch, relay_anomaly
-        )
+        try:
+            from .infrastructure_checks import (
+                has_private_ip, helo_mismatch, relay_anomaly
+            )
+        except (ImportError, ValueError):
+            from infrastructure_checks import (
+                has_private_ip, helo_mismatch, relay_anomaly
+            )
         
         score = 0
         received_headers = msg.get_all("Received") or []
@@ -259,17 +289,17 @@ def calculate_infrastructure_score(msg, metadata):
         
         # Private IP presence
         if has_private_ip(received_headers):
-            score += 2
+            score += 20
         
         # HELO mismatch
         if helo_mismatch(helo, from_domain):
-            score += 1.5
+            score += 15
         
         # Relay anomaly
         if relay_anomaly(received_count):
-            score += 2
+            score += 20
         
-        return min(score, 10)
+        return min(score, 100)
     except Exception as e:
         print(f"Infrastructure check error: {e}")
         return 0
@@ -283,24 +313,27 @@ def calculate_mime_score(msg):
     Calculate phishing score based on MIME structure analysis.
     
     :param msg: email message object
-    :return: score (0-10)
+    :return: score (0-100)
     """
     try:
-        from .mime_checks import detect_encodings, count_mime_parts, suspicious_encoding
+        try:
+            from .mime_checks import detect_encodings, count_mime_parts, suspicious_encoding
+        except (ImportError, ValueError):
+            from mime_checks import detect_encodings, count_mime_parts, suspicious_encoding
         
         score = 0
         
         # Detect suspicious encodings
         encodings = detect_encodings(msg)
         if suspicious_encoding(encodings):
-            score += 2
+            score += 20
         
         # Too many MIME parts
         part_count = count_mime_parts(msg)
         if part_count > 10:
-            score += 1.5
+            score += 15
         
-        return min(score, 10)
+        return min(score, 100)
     except Exception as e:
         print(f"MIME check error: {e}")
         return 0
@@ -314,13 +347,19 @@ def calculate_timing_score(msg):
     Calculate phishing score based on timing analysis.
     
     :param msg: email message object
-    :return: score (0-10)
+    :return: score (0-100)
     """
     try:
-        from .timing_checks import (
-            extract_timestamps, has_time_travel, 
-            total_delivery_time, suspicious_delivery
-        )
+        try:
+            from .timing_checks import (
+                extract_timestamps, has_time_travel, 
+                total_delivery_time, suspicious_delivery
+            )
+        except (ImportError, ValueError):
+            from timing_checks import (
+                extract_timestamps, has_time_travel, 
+                total_delivery_time, suspicious_delivery
+            )
         
         score = 0
         received_headers = msg.get_all("Received") or []
@@ -331,14 +370,14 @@ def calculate_timing_score(msg):
         if timestamps:
             # Time travel anomaly (backward timestamps)
             if has_time_travel(timestamps):
-                score += 2.5
+                score += 25
             
             # Suspicious delivery speed
             total_time = total_delivery_time(timestamps)
             if suspicious_delivery(total_time):
-                score += 2
+                score += 20
         
-        return min(score, 10)
+        return min(score, 100)
     except Exception as e:
         print(f"Timing check error: {e}")
         return 0
@@ -352,29 +391,29 @@ def calculate_metadata_score(metadata):
     Calculate phishing score based on email metadata.
     
     :param metadata: email metadata dict from analyzer
-    :return: score (0-10)
+    :return: score (0-100)
     """
     score = 0
     
     # Check for header mismatches (phishing indicator)
     if metadata.get("reply_to_mismatch"):
-        score += 2.5
+        score += 25
     
     # Check for missing or suspicious headers
     if not metadata.get("authentication_results"):
-        score += 1.5
+        score += 15
     
     # Check for unusual mailer or headers
     if metadata.get("x_mailer") and "unknown" in str(metadata.get("x_mailer", "")).lower():
-        score += 1
+        score += 10
     
     # Domain mismatch between From and Return-Path
     from_domain = metadata.get("from_domain")
     return_path_domain = metadata.get("return_path_domain")
     if from_domain and return_path_domain and from_domain != return_path_domain:
-        score += 2
+        score += 20
     
-    return min(score, 10)
+    return min(score, 100)
 
 
 # ============================================================
@@ -385,7 +424,7 @@ def calculate_ip_score(ip_analysis):
     Calculate phishing score based on IP analysis.
     
     :param ip_analysis: IP analysis dict from infrastructure_analysis
-    :return: score (0-10)
+    :return: score (0-100)
     """
     score = 0
     
@@ -394,13 +433,13 @@ def calculate_ip_score(ip_analysis):
     
     # Multiple IPs can indicate spoofing
     if len(ips) > 5:
-        score += 1.5
+        score += 15
     
     # No originating IP found (suspicious)
     if not originating_ip:
-        score += 2
+        score += 20
     
-    return min(score, 10)
+    return min(score, 100)
 
 
 # ============================================================
@@ -418,8 +457,12 @@ def calculate_url_security_score(email_body):
         return 0, [], [], []
     
     try:
-        from .url_analyzer import extract_urls, has_spf, has_dmarc, has_dkim
-        from .url_ml_analyzer import get_url_security_score_from_ml
+        try:
+            from .url_analyzer import extract_urls, has_spf, has_dmarc, has_dkim
+            from .url_ml_analyzer import get_url_security_score_from_ml
+        except (ImportError, ValueError):
+            from url_analyzer import extract_urls, has_spf, has_dmarc, has_dkim
+            from url_ml_analyzer import get_url_security_score_from_ml
         
         urls = extract_urls(email_body)
         if not urls:
@@ -434,7 +477,10 @@ def calculate_url_security_score(email_body):
         dkim_results = []
         
         for url in urls:
-            from .url_analyzer import get_domain
+            try:
+                from .url_analyzer import get_domain
+            except (ImportError, ValueError):
+                from url_analyzer import get_domain
             domain = get_domain(url)
             spf_results.append(has_spf(domain))
             dmarc_results.append(has_dmarc(domain))
@@ -460,7 +506,10 @@ def calculate_transformer_score(email_body):
         return 0
     
     try:
-        from .huggingface_analyzer import get_transformer_score
+        try:
+            from .huggingface_analyzer import get_transformer_score
+        except (ImportError, ValueError):
+            from huggingface_analyzer import get_transformer_score
         
         score = get_transformer_score(email_body)
         return min(score, 10)
@@ -480,8 +529,12 @@ def calculate_comprehensive_phishing_score(email_file_path):
     :return: dict with overall score and all component scores
     """
     try:
-        from .analyzer import analyze_email, load_email
-        from .infrastructure_analysis import analyze_received_headers
+        try:
+            from .analyzer import analyze_email, load_email
+            from .infrastructure_analysis import analyze_received_headers
+        except (ImportError, ValueError):
+            from analyzer import analyze_email, load_email
+            from infrastructure_analysis import analyze_received_headers
         
         # Load email
         msg = load_email(email_file_path)
@@ -625,16 +678,16 @@ def get_risk_level(score):
     """
     Determine risk level based on score.
     
-    :param score: phishing score (0-10)
+    :param score: phishing score (0-100)
     :return: risk level string
     """
-    if score >= 8:
+    if score >= 80:
         return "CRITICAL"
-    elif score >= 6:
+    elif score >= 60:
         return "HIGH"
-    elif score >= 4:
+    elif score >= 40:
         return "MEDIUM"
-    elif score >= 2:
+    elif score >= 20:
         return "LOW"
     else:
         return "MINIMAL"

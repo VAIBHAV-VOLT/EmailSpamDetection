@@ -6,11 +6,17 @@ Orchestrates the complete analysis pipeline using ML models and rule-based check
 
 import sys
 import os
+import importlib.util
 
 # Add ML module to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'ml', 'phishingtool'))
+# Add backend utils to path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'utils'))
 
-from utils.preprocess import clean_text, truncate_text
+try:
+    from preprocess import clean_text, truncate_text
+except ImportError:
+    from utils.preprocess import clean_text, truncate_text
 
 
 def predict_phishing(email_file_path):
@@ -28,10 +34,31 @@ def predict_phishing(email_file_path):
     :return: Dictionary with analysis results
     """
     try:
-        # Import ML modules
-        from analyzer import analyze_email, load_email
-        from infrastructure_analysis import analyze_received_headers
-        from score_calculator import calculate_phishing_score, get_risk_level
+        # Import ML modules with fallback handling
+        try:
+            from analyzer import analyze_email, load_email
+            from infrastructure_analysis import analyze_received_headers
+            from score_calculator import calculate_phishing_score, get_risk_level
+        except (ImportError, ValueError) as import_err:
+            # Try alternative import paths
+            import importlib.util
+            phishing_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'ml', 'phishingtool')
+            
+            # Load modules manually if standard imports fail
+            spec_analyzer = importlib.util.spec_from_file_location("analyzer", os.path.join(phishing_dir, "analyzer.py"))
+            analyzer_module = importlib.util.module_from_spec(spec_analyzer)
+            spec_analyzer.loader.exec_module(analyzer_module)
+            analyze_email, load_email = analyzer_module.analyze_email, analyzer_module.load_email
+            
+            spec_infra = importlib.util.spec_from_file_location("infrastructure_analysis", os.path.join(phishing_dir, "infrastructure_analysis.py"))
+            infra_module = importlib.util.module_from_spec(spec_infra)
+            spec_infra.loader.exec_module(infra_module)
+            analyze_received_headers = infra_module.analyze_received_headers
+            
+            spec_score = importlib.util.spec_from_file_location("score_calculator", os.path.join(phishing_dir, "score_calculator.py"))
+            score_module = importlib.util.module_from_spec(spec_score)
+            spec_score.loader.exec_module(score_module)
+            calculate_phishing_score, get_risk_level = score_module.calculate_phishing_score, score_module.get_risk_level
         
         # Step 1: Load and parse email
         msg = load_email(email_file_path)
@@ -103,7 +130,16 @@ def get_model_info():
     :return: Dictionary with model details
     """
     try:
-        from huggingface_analyzer import MODEL_NAME, MODEL_LOADED
+        try:
+            from huggingface_analyzer import MODEL_NAME, MODEL_LOADED
+        except (ImportError, ValueError):
+            import importlib.util
+            phishing_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'ml', 'phishingtool')
+            spec = importlib.util.spec_from_file_location("huggingface_analyzer", os.path.join(phishing_dir, "huggingface_analyzer.py"))
+            hf_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(hf_module)
+            MODEL_NAME = getattr(hf_module, 'MODEL_NAME', 'unknown')
+            MODEL_LOADED = getattr(hf_module, 'MODEL_LOADED', False)
         
         return {
             "transformer_model": MODEL_NAME,

@@ -13,29 +13,29 @@ def calculate_metadata_score(metadata):
     Calculate phishing score based on email metadata.
     
     :param metadata: email metadata dict from analyzer
-    :return: score (0-10)
+    :return: score (0-100)
     """
     score = 0
     
     # Check for header mismatches (phishing indicator)
     if metadata.get("reply_to_mismatch"):
-        score += 2.5
+        score += 25
     
     # Check for missing or suspicious headers
     if not metadata.get("authentication_results"):
-        score += 1.5
+        score += 15
     
     # Check for unusual mailer or headers
     if metadata.get("x_mailer") and "unknown" in str(metadata.get("x_mailer", "")).lower():
-        score += 1
+        score += 10
     
     # Domain mismatch between From and Return-Path
     from_domain = metadata.get("from_domain")
     return_path_domain = metadata.get("return_path_domain")
     if from_domain and return_path_domain and from_domain != return_path_domain:
-        score += 2
+        score += 20
     
-    return min(score, 10)
+    return min(score, 100)
 
 
 def calculate_url_score(urls):
@@ -43,7 +43,7 @@ def calculate_url_score(urls):
     Calculate phishing score based on URLs in email body.
     
     :param urls: list of URLs from analyzer
-    :return: score (0-10)
+    :return: score (0-100)
     """
     score = 0
     
@@ -52,7 +52,7 @@ def calculate_url_score(urls):
     
     # Multiple URLs can indicate phishing
     if len(urls) > 3:
-        score += 1.5
+        score += 15
     
     # Check for suspicious domains
     suspicious_keywords = ['secure', 'verify', 'confirm', 'update', 'validate', 'account']
@@ -60,15 +60,15 @@ def calculate_url_score(urls):
         domain = url.get("domain", "").lower()
         for keyword in suspicious_keywords:
             if keyword in domain:
-                score += 1
+                score += 10
                 break
     
     # Check for mismatched URLs (display text vs actual URL)
     for url in urls:
         if url.get("scheme") == "http":  # Non-HTTPS
-            score += 0.5
+            score += 5
     
-    return min(score, 10)
+    return min(score, 100)
 
 
 def calculate_ip_score(ip_analysis):
@@ -76,7 +76,7 @@ def calculate_ip_score(ip_analysis):
     Calculate phishing score based on IP analysis.
     
     :param ip_analysis: IP analysis dict from infrastructure_analysis
-    :return: score (0-10)
+    :return: score (0-100)
     """
     score = 0
     
@@ -85,13 +85,13 @@ def calculate_ip_score(ip_analysis):
     
     # Multiple IPs can indicate spoofing
     if len(ips) > 5:
-        score += 1.5
+        score += 15
     
     # No originating IP found (suspicious)
     if not originating_ip:
-        score += 2
+        score += 20
     
-    return min(score, 10)
+    return min(score, 100)
 
 
 def calculate_security_check_score(urls):
@@ -132,7 +132,7 @@ def calculate_security_check_score(urls):
             pass
 
     if total_domains > 0:
-        score = min((risky_domains / total_domains) * 10, 10)
+        score = min((risky_domains / total_domains) * 100, 100)
 
     return score, spf_results, dmarc_results, dkim_results
 
@@ -142,14 +142,14 @@ def calculate_transformer_score(email_body):
     Calculate phishing score using Hugging Face transformer model.
     
     :param email_body: email body text from analyzer
-    :return: score (0-10)
+    :return: score (0-100)
     """
     if not email_body:
         return 0
     try:
         from huggingface_analyzer import get_transformer_score
         score = get_transformer_score(email_body)
-        return min(score, 10)
+        return min(score, 100)
     except Exception:
         return 0
 
@@ -159,7 +159,7 @@ def calculate_url_analyzer_score(email_body):
     Calculate phishing score based on advanced URL analysis.
     
     :param email_body: email body text from analyzer
-    :return: score (0-10)
+    :return: score (0-100)
     """
     if not email_body:
         return 0
@@ -170,7 +170,7 @@ def calculate_url_analyzer_score(email_body):
         suspicious_urls = url_result.get("suspicious_count", 0)
         if total_urls == 0:
             return 0
-        return min((suspicious_urls / total_urls) * 10, 10)
+        return min((suspicious_urls / total_urls) * 100, 100)
     except Exception:
         return 0
 
@@ -239,16 +239,16 @@ def get_risk_level(score):
     """
     Determine risk level based on score.
     
-    :param score: phishing score (0-10)
+    :param score: phishing score (0-100)
     :return: risk level string
     """
-    if score >= 8:
+    if score >= 80:
         return "CRITICAL"
-    elif score >= 6:
+    elif score >= 60:
         return "HIGH"
-    elif score >= 4:
+    elif score >= 40:
         return "MEDIUM"
-    elif score >= 2:
+    elif score >= 20:
         return "LOW"
     else:
         return "MINIMAL"

@@ -14,20 +14,24 @@ const ResultCard = ({ result }) => {
     );
   }
 
-  // Determine risk level color
+  // Determine risk level color based on CRITICAL, HIGH, MEDIUM, LOW, MINIMAL
   const getRiskLevelColor = (riskLevel) => {
-    const level = riskLevel?.toLowerCase() || "";
-    if (level.includes("safe")) return "text-green-600";
-    if (level.includes("suspicious")) return "text-yellow-600";
-    if (level.includes("phishing")) return "text-red-600";
+    const level = riskLevel?.toUpperCase() || "";
+    if (level === "CRITICAL") return "text-red-700";
+    if (level === "HIGH") return "text-orange-700";
+    if (level === "MEDIUM") return "text-yellow-700";
+    if (level === "LOW") return "text-lime-700";
+    if (level === "MINIMAL") return "text-green-700";
     return "text-slate-600";
   };
 
   const getRiskLevelBgColor = (riskLevel) => {
-    const level = riskLevel?.toLowerCase() || "";
-    if (level.includes("safe")) return "bg-green-100 border-green-300";
-    if (level.includes("suspicious")) return "bg-yellow-100 border-yellow-300";
-    if (level.includes("phishing")) return "bg-red-100 border-red-300";
+    const level = riskLevel?.toUpperCase() || "";
+    if (level === "CRITICAL") return "bg-red-200 border-red-500 shadow-lg shadow-red-200";
+    if (level === "HIGH") return "bg-orange-200 border-orange-500 shadow-lg shadow-orange-200";
+    if (level === "MEDIUM") return "bg-yellow-200 border-yellow-500 shadow-lg shadow-yellow-200";
+    if (level === "LOW") return "bg-lime-200 border-lime-500 shadow-lg shadow-lime-200";
+    if (level === "MINIMAL") return "bg-green-200 border-green-500 shadow-lg shadow-green-200";
     return "bg-slate-100 border-slate-300";
   };
 
@@ -63,11 +67,15 @@ const ResultCard = ({ result }) => {
             {result.risk_level ?? "Unknown"}
           </p>
           <p className="mt-4 text-center text-xs text-slate-500">
-            {result.risk_level?.toLowerCase() === "safe"
-              ? "This email appears legitimate"
-              : result.risk_level?.toLowerCase() === "suspicious"
+            {result.risk_level?.toUpperCase() === "CRITICAL"
+              ? "Danger: Very likely to be phishing"
+              : result.risk_level?.toUpperCase() === "HIGH"
+              ? "Warning: Likely to be phishing"
+              : result.risk_level?.toUpperCase() === "MEDIUM"
               ? "Caution: Some suspicious indicators"
-              : "Warning: High phishing probability"}
+              : result.risk_level?.toUpperCase() === "LOW"
+              ? "Safe: Few suspicious indicators"
+              : "Very Safe: Email appears legitimate"}
           </p>
         </div>
 

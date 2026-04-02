@@ -3,7 +3,7 @@ import FileUpload from "../Components/FileUpload";
 import Loader from "../Components/Loader";
 import ResultCard from "../Components/ResultCard";
 
-const BACKEND_URL = "http://localhost:5000/analyze_email_route";
+const BACKEND_URL = "http://localhost:5000/api/analyze_email";
 
 function EmailAnalyzer() {
     const [selectedFile, setSelectedFile] = useState(null);
@@ -28,10 +28,30 @@ function EmailAnalyzer() {
         const data = await res.json();
         if (!res.ok) {
             setResult({ error: data?.error || "Request failed" });
-        } else if (data?.status === "success" && data?.data != null) {
-            setResult(data.data);
+        } else if (data?.status === "success" && data?.analysis != null) {
+            // Extract analysis data and flatten security checks
+            const analysisData = data.analysis;
+            const securityChecks = analysisData.security_checks || {};
+            
+            const result = {
+                overall_score: analysisData.overall_score,
+                risk_level: analysisData.risk_level,
+                spf: securityChecks.spf,
+                dkim: securityChecks.dkim,
+                dmarc: securityChecks.dmarc,
+                originating_ip: securityChecks.originating_ip,
+                from_address: analysisData.email_metadata?.from,
+                to_address: analysisData.email_metadata?.to,
+                subject: analysisData.email_metadata?.subject,
+                date: analysisData.email_metadata?.date,
+                component_scores: analysisData.component_scores,
+                details: analysisData.details,
+                output_file: data.output_file,
+                output_path: data.output_path
+            };
+            setResult(result);
         } else {
-            setResult(data?.data ?? data ?? null);
+            setResult(data?.error ? { error: data.error } : null);
         }
         setLoading(false);
     };
