@@ -5,6 +5,7 @@ Handles POST requests for email file upload and analysis.
 """
 
 import os
+import json
 from datetime import datetime
 from flask import Blueprint, request, jsonify, current_app
 from services.inference import predict_phishing
@@ -53,6 +54,23 @@ def analyze_email():
             analysis_result = predict_phishing(temp_path)
             
             if analysis_result:
+                # Save analysis result to JSON file
+                output_filename = f"analysis_{timestamp}_{file.filename.replace('.eml', '')}.json"
+                output_path = os.path.join(
+                    current_app.config['UPLOAD_FOLDER'], 
+                    output_filename
+                )
+                
+                try:
+                    with open(output_path, 'w', encoding='utf-8') as f:
+                        json.dump(analysis_result, f, indent=2, ensure_ascii=False)
+                    
+                    # Add file path to response
+                    analysis_result['output_file'] = output_filename
+                    analysis_result['output_path'] = output_path
+                except Exception as write_err:
+                    print(f"Warning: Failed to save JSON output file: {str(write_err)}")
+                
                 return jsonify(analysis_result), 200
             else:
                 return jsonify({

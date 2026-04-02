@@ -36,7 +36,7 @@ class URLAuthenticityResult:
     url: str
     is_legitimate: bool
     confidence: float
-    score: int  # 0-10 scale for compatibility
+    score: int  # 0-100 scale for compatibility
     reasons: List[str]
 
 
@@ -126,10 +126,10 @@ def analyze_url_with_ml(url: str) -> URLAuthenticityResult:
             
             if is_phishing:
                 reasons.append(f"ML model detected suspicious URL patterns (confidence: {confidence:.2%})")
-                score = int(confidence * 10)
+                score = int(confidence * 100)
             else:
                 reasons.append(f"ML model validated URL as legitimate")
-                score = int((1 - confidence) * 10)
+                score = int((1 - confidence) * 100)
             
             is_legitimate = not is_phishing
             
@@ -137,12 +137,12 @@ def analyze_url_with_ml(url: str) -> URLAuthenticityResult:
             # Fallback to heuristic analysis
             is_legitimate, confidence, heuristic_reasons = heuristic_url_check(url)
             reasons.extend(heuristic_reasons)
-            score = int(confidence * 10) if not is_legitimate else int((1 - confidence) * 10)
+            score = int(confidence * 100) if not is_legitimate else int((1 - confidence) * 100)
         
         return URLAuthenticityResult(
             url=url,
             is_legitimate=is_legitimate,
-            confidence=confidence if MODEL_LOADED else (1 - score / 10),
+            confidence=confidence if MODEL_LOADED else (1 - score / 100),
             score=score,
             reasons=reasons
         )
@@ -153,7 +153,7 @@ def analyze_url_with_ml(url: str) -> URLAuthenticityResult:
         is_legitimate, confidence, heuristic_reasons = heuristic_url_check(url)
         reasons.extend(heuristic_reasons)
         reasons.append(f"Error during ML analysis, used heuristics: {str(e)}")
-        score = int(confidence * 10) if not is_legitimate else int((1 - confidence) * 10)
+        score = int(confidence * 100) if not is_legitimate else int((1 - confidence) * 100)
         
         return URLAuthenticityResult(
             url=url,
@@ -199,9 +199,9 @@ def get_url_security_score_from_ml(urls: List[str]) -> Tuple[int, dict]:
     if malicious_count == 0:
         overall_score = 0
     elif malicious_count == len(results):
-        overall_score = min(10, max_score + 2)  # All malicious = high score
+        overall_score = min(100, max_score + 20)  # All malicious = high score
     else:
-        overall_score = min(10, max_score + 1)  # Some malicious = moderate increase
+        overall_score = min(100, max_score + 10)  # Some malicious = moderate increase
     
     details = {
         "analyzed_urls": len(urls),

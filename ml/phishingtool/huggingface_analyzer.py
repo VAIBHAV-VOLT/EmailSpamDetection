@@ -36,7 +36,7 @@ def analyze_email_body_with_transformers(email_body):
     Analyze email body using pre-trained phishing detection model.
     
     :param email_body: str, the email body text
-    :return: dict with model_score (0-10) and label
+    :return: dict with model_score (0-100) and label
     """
     if not email_body or not email_body.strip():
         return {
@@ -60,7 +60,7 @@ def analyze_email_body_with_transformers(email_body):
         label = results[0]['label']
         confidence = results[0]['score']
         
-        # Convert to phishing score (0-10)
+        # Convert to phishing score (0-100)
         # Handle different label formats:
         # - LABEL_0, LABEL_1 (numeric)
         # - NEGATIVE, POSITIVE (text)
@@ -79,11 +79,11 @@ def analyze_email_body_with_transformers(email_body):
         # Calculate score
         if is_positive:
             # High confidence in positive (spam/phishing) = high risk
-            model_score = confidence * 10
+            model_score = confidence * 100
         else:
             # Low confidence in negative (ham/legitimate) = low risk
             # But if confidence is LOW in legitimate, it means HIGH risk
-            model_score = (1 - confidence) * 10
+            model_score = (1 - confidence) * 100
         
         return {
             "model_score": round(model_score, 2),
@@ -158,8 +158,8 @@ def analyze_email_body_fallback(email_body):
             score += 2
             break
     
-    # Normalize score to 0-10
-    model_score = min(score, 10)
+    # Normalize score to 0-100
+    model_score = min(score, 100)
     
     return {
         "model_score": round(model_score, 2),
@@ -175,7 +175,7 @@ def get_transformer_score(email_body):
     Simple wrapper to get just the score from transformer analysis.
     
     :param email_body: str, the email body text
-    :return: float, score from 0-10
+    :return: float, score from 0-100
     """
     result = analyze_email_body_with_transformers(email_body)
     return result.get("model_score", 0)
@@ -197,7 +197,7 @@ if __name__ == "__main__":
     print("Analyzing test email with pre-trained phishing detection model...")
     result = analyze_email_body_with_transformers(test_email)
     
-    print(f"\nModel Score: {result['model_score']}/10")
+    print(f"\nModel Score: {result['model_score']}/100")
     print(f"Label: {result['label']}")
     print(f"Confidence: {result['confidence']}")
     print(f"Model Used: {result['model_used']}")
