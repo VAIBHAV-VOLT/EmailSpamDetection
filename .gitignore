@@ -78,6 +78,7 @@ build/
 htmlcov/
 .tox/
 .hypothesis/
+data/test.py
 
 # ============================================================
 # Database

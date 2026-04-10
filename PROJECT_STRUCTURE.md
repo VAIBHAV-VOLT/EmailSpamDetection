@@ -6,7 +6,7 @@ EmailSpamDetection/
 ├── backend/                          # Flask Web Server & Backend Services
 │   ├── main.py                       # Main Flask application (HTTP server)
 │   └── score_backend/                # Alternative/Legacy backend modules
-│       ├── analyzer.py
+│       ├── email_analyzer.py
 │       ├── huggingface_analyzer.py
 │       ├── infrastructure_analysis.py
 │       ├── original_ip_analysis.py
@@ -46,7 +46,7 @@ EmailSpamDetection/
 │
 ├── ml/                               # Machine Learning & Analysis Engine
 │   └── phishingtool/                 # Core ML analysis module
-│       ├── analyzer.py               # Main analyzer engine
+│       ├── email_analyzer.py           # Main analyzer engine
 │       ├── parser.py                 # Email parser
 │       ├── huggingface_analyzer.py   # HuggingFace RoBERTa integration
 │       ├── url_analyzer.py           # URL analysis
@@ -161,6 +161,6 @@ npm run dev
 
 ### ML Testing
 ```bash
-from ml.phishingtool import analyzer
-result = analyzer.analyze_email('sample.eml')
+from ml.phishingtool import email_analyzer
+result = email_analyzer.analyze_email('sample.eml')
 ```

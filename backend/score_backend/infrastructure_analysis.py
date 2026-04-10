@@ -1,6 +1,20 @@
+import sys
+import os
+
+# Add ml/phishingtool to Python path FIRST, before any other imports
+ml_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../ml/phishingtool'))
+if ml_path not in sys.path:
+    sys.path.insert(0, ml_path)
+
 import re
 import ipaddress
 from email.message import Message
+
+# Now we can import from ml/phishingtool
+try:
+    from ml.phishingtool.email_analyzer import extract_metadata
+except ImportError:
+    extract_metadata = None
 
 
 def extract_ips(metadata):
@@ -80,7 +94,8 @@ def analyze_received_headers(msg: Message):
              - "ips": list of all found IPs (may include private)
              - "originating_ip": first public IP, or None
     """
-    from analyzer import extract_metadata
+    if extract_metadata is None:
+        raise ImportError("email_analyzer.extract_metadata not available")
     
     metadata = extract_metadata(msg)
     ips = extract_ips(metadata)
@@ -95,10 +110,16 @@ def analyze_received_headers(msg: Message):
 # Main execution
 if __name__ == "__main__":
     # Import here to avoid circular imports
-    from analyzer import analyze_email, load_email
-    from original_ip_analysis import analyze_with_ai
+    try:
+        from ml.phishingtool.email_analyzer import analyze_email, load_email
+        from original_ip_analysis import analyze_with_ai
+    except ImportError as e:
+        print(f"Import error: {e}")
+        analyze_email = None
+        load_email = None
+        analyze_with_ai = None
     
-    # Analyze email from analyzer
+    # Analyze email from email_analyzer
     email_result = analyze_email("email2.eml")
     
     # Extract message object for IP analysis

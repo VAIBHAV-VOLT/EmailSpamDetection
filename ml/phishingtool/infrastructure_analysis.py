@@ -81,9 +81,9 @@ def analyze_received_headers(msg: Message):
              - "originating_ip": first public IP, or None
     """
     try:
-        from phishingtool.analyzer import extract_metadata
+        from phishingtool.email_analyzer import extract_metadata
     except ImportError:
-        from analyzer import extract_metadata
+        from email_analyzer import extract_metadata
     
     metadata = extract_metadata(msg)
     ips = extract_ips(metadata)
@@ -99,13 +99,13 @@ def analyze_received_headers(msg: Message):
 if __name__ == "__main__":
     # Import here to avoid circular imports
     try:
-        from phishingtool.analyzer import analyze_email, load_email
+        from phishingtool.email_analyzer import analyze_email, load_email
         from phishingtool.original_ip_analysis import analyze_with_ai
     except ImportError:
-        from analyzer import analyze_email, load_email
+        from email_analyzer import analyze_email, load_email
         from original_ip_analysis import analyze_with_ai
     
-    # Analyze email from analyzer
+    # Analyze email from email_analyzer
     email_result = analyze_email("email2.eml")
     
     # Extract message object for IP analysis

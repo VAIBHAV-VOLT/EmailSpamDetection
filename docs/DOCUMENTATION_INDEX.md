@@ -314,7 +314,7 @@ docs/
 ### Key Files
 - `run.bat` / `run.ps1` - Startup scripts
 - `backend/main.py` - Flask server
-- `ml/phishingtool/analyzer.py` - Core analysis
+- `ml/phishingtool/email_analyzer.py` - Core analysis
 - `frontend/emailanalyzer/src/App.jsx` - React app
 
 ---

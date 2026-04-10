@@ -105,7 +105,7 @@ def profile_full_analysis(email_file='email2.eml'):
     # ========== EMAIL PARSING ==========
     @time_it('Email Parsing')
     def parse_email():
-        from analyzer import load_email, analyze_email
+        from email_analyzer import load_email, analyze_email
         msg = load_email(email_file)
         result = analyze_email(email_file)
         return msg, result

@@ -1,5 +1,13 @@
 import socket
 from urllib.parse import urlparse
+import sys
+import os
+
+# Add ml/phishingtool to Python path FIRST, before any other imports from there
+ml_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../ml/phishingtool'))
+if ml_path not in sys.path:
+    sys.path.insert(0, ml_path)
+
 import dns.resolver
 import dns.exception
 
@@ -14,8 +22,11 @@ socket.setdefaulttimeout(5.0)
 # Simple cache for DNS lookups to avoid repeated queries
 _dns_cache = {}
 
-# Import your existing analyzer
-from analyzer import analyze_email
+# Import email analyzer from ml/phishingtool
+try:
+    from ml.phishingtool.email_analyzer import analyze_email
+except ImportError:
+    analyze_email = None
 
 
 # -------------------------------

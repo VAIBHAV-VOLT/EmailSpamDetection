@@ -177,7 +177,7 @@ def calculate_url_analyzer_score(email_body):
 
 def calculate_phishing_score(email_result, ip_analysis):
     """
-    Calculate overall phishing risk score by combining all analyzers.
+    Calculate overall phishing risk score by combining all email analyzers.
     
     :param email_result: result from analyze_email()
     :param ip_analysis: result from analyze_received_headers()
@@ -276,7 +276,7 @@ def save_to_json(phishing_score, filename="phishing_assessment.json"):
 # Main execution
 if __name__ == "__main__":
     # Import here to avoid circular imports
-    from analyzer import analyze_email, load_email
+    from ml.phishingtool.email_analyzer import analyze_email, load_email
     from infrastructure_analysis import analyze_received_headers
     
     # Load and analyze email

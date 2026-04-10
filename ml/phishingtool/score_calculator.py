@@ -530,10 +530,10 @@ def calculate_comprehensive_phishing_score(email_file_path):
     """
     try:
         try:
-            from .analyzer import analyze_email, load_email
+            from .email_analyzer import analyze_email, load_email
             from .infrastructure_analysis import analyze_received_headers
         except (ImportError, ValueError):
-            from analyzer import analyze_email, load_email
+            from email_analyzer import analyze_email, load_email
             from infrastructure_analysis import analyze_received_headers
         
         # Load email

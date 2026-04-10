@@ -67,34 +67,57 @@ def extract_metadata(msg):
 # -------------------------------
 # 3️⃣ Decode Email Body (Handles text + HTML)
 # -------------------------------
-def decode_body(msg):
-    body = ""
-    try:
-        if msg.is_multipart():
-            for part in msg.walk():
-                content_type = part.get_content_type()
-                content_disposition = str(part.get("Content-Disposition", ""))
+from bs4 import BeautifulSoup
 
-                if "attachment" in content_disposition:
+def decode_body(msg):
+    body_parts = []
+
+    if msg.is_multipart():
+        for part in msg.walk():
+
+            content_type = part.get_content_type()
+            disposition = part.get_content_disposition()
+
+            # ✅ Handle nested email (important)
+            if content_type == "message/rfc822":
+                payload = part.get_payload()
+
+                if isinstance(payload, list):
+                    for nested in payload:
+                        body_parts.append(decode_body(nested))
+                elif payload:
+                    body_parts.append(decode_body(payload))
+
+                continue
+
+            # ✅ Skip real attachments only
+            if disposition == "attachment":
+                continue
+
+            # ✅ Extract text/plain
+            if content_type == "text/plain":
+                try:
+                    body_parts.append(part.get_content())
+                except:
                     continue
 
+            # ✅ Extract and CLEAN HTML
+            elif content_type == "text/html":
                 try:
-                    if content_type == "text/plain":
-                        body += part.get_content()
-                    elif content_type == "text/html":
-                        body += part.get_content()
-                except (KeyError, LookupError, UnicodeDecodeError, ValueError):
-                    pass
+                    html = part.get_content()
+                    soup = BeautifulSoup(html, "html.parser")
+                    text = soup.get_text(separator=" ", strip=True)
+                    body_parts.append(text)
+                except:
+                    continue
 
-        else:
-            try:
-                body = msg.get_content()
-            except (KeyError, LookupError, UnicodeDecodeError, ValueError):
-                body = ""
-    except Exception:
-        body = ""
+    else:
+        try:
+            body_parts.append(msg.get_content())
+        except:
+            pass
 
-    return body if isinstance(body, str) else ""
+    return "\n".join(body_parts)
 
 
 # -------------------------------

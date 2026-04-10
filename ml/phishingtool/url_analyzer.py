@@ -13,7 +13,7 @@ from difflib import SequenceMatcher
 import dns.resolver
 import dns.exception
 
-from analyzer import analyze_email
+from email_analyzer import analyze_email
 
 
 # =====================================

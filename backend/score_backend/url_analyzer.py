@@ -1,5 +1,13 @@
 from __future__ import annotations
 
+import sys
+import os
+
+# Add ml/phishingtool to Python path FIRST, before any other imports from there
+ml_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../ml/phishingtool'))
+if ml_path not in sys.path:
+    sys.path.insert(0, ml_path)
+
 import ipaddress
 import re
 from dataclasses import dataclass, asdict
@@ -7,8 +15,11 @@ from difflib import SequenceMatcher
 from typing import Dict, List, Optional
 from urllib.parse import urlparse, ParseResult
 
-# 🔴 Import the email analyzer you already built
-from analyzer import analyze_email
+# Import the email analyzer
+try:
+    from ml.phishingtool.email_analyzer import analyze_email
+except ImportError:
+    analyze_email = None
 
 
 # -------------------------------

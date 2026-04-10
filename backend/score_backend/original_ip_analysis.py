@@ -1,20 +1,32 @@
-from flask import Flask, request, jsonify
-from google import genai
-from google.genai import types
+import sys
 import os
 from dotenv import load_dotenv
 
+# Add ml/phishingtool to Python path FIRST, before any other imports
+ml_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../ml/phishingtool'))
+if ml_path not in sys.path:
+    sys.path.insert(0, ml_path)
+
+# Now import google genai
+from google import genai
+from google.genai import types
 
 # Load environment variables
 load_dotenv()
 
-# Get API key from environment variable
-api_key = os.environ.get("API_KEY")
-if not api_key:
-    raise ValueError("API_KEY not found in environment variables. Please check your .env file.")
+# Initialize the client lazily (only when needed)
+_client = None
 
-# Initialize the client with API key
-client = genai.Client(api_key=api_key)
+
+def _get_client():
+    """Get or initialize the Gemini AI client"""
+    global _client
+    if _client is None:
+        api_key = os.environ.get("API_KEY")
+        if not api_key:
+            raise ValueError("API_KEY not found in environment variables. Please check your .env file.")
+        _client = genai.Client(api_key=api_key)
+    return _client
 
 
 def analyze_with_ai(originating_ip):
